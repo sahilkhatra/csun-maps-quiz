@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://maps.googleapis.com/maps/api/js?key=<your-key-here>&callback=initMap" defer></script>
+
+        <title>CSUN Maps Game</title>
+    </head>
+    <body>
+        <header>
+            <h1>CSUN Maps Quiz</h1>
+        </header>
+        <main>
+            <section class="question">
+                <p>Double Click to Answer</p>
+                <button onclick="nextQuestion()">Start</button>
+            </section>
+
+            <section class="question">
+                <p>1. Click on Jacaranda</p>
+            </section>
+
+            <section class="question">
+                <p>2. Click on Chaparral Hall</p>
+            </section>
+
+            <section class="question">
+                <p>3. Click on Sierra Hall</p>
+            </section>
+
+            <section class="question">
+                <p>4. Click on University Library</p>
+            </section>
+
+            <section class="question">
+                <p>5. Click on Nordhoff Hall</p>
+            </section>
+
+            <section class="results">
+            </section>
+
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="next-container"></div>
+            </div>
+        </main>
+        <script>
+            // some functions for testing
+            var get = function(elem) {
+                return document.querySelector(elem);
+            };
+
+            var getAll = function(elem) {
+                return document.querySelectorAll(elem);
+            };
+
+            var print = function(value) {
+                console.log(value);
+            };
+
+            // initialize google map
+            var initMap = function() {
+                var location = {lat: 34.239127, lng: 241.471263};
+
+                var map = new google.maps.Map(get('#map'), {
+                    zoom: 17,
+                    center: location,
+                    gestureHandling: "none",
+                    zoomControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false,
+                    mapTypeControl: false,
+                    clickableIcons: false,
+                    rotateControl: false,
+                });
+                map.setOptions({ 
+                    styles: [
+                        {
+                            elementType: 'labels.icon',
+                            stylers: [{visibility: 'off'}],
+                        },
+                        {
+                            elementType: 'labels.text',
+                            stylers: [{visibility: 'off'}],
+                        },
+                    ] 
+                });
+
+                const jacaranda = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillOpacity: 0,
+                    map,
+                    bounds: {
+                        north: 34.24209,
+                        south: 34.24099,
+                        east: -118.5278,
+                        west: -118.5294,
+                    },
+                });
+
+                const chaparralhall = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillOpacity: 0,
+                    map,
+                    bounds: {
+                        north: 34.23857,
+                        south: 34.2379,
+                        east: -118.5267,
+                        west: -118.52725,
+                    },
+                });
+
+                const sierrahall = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillOpacity: 0,
+                    map,
+                    bounds: {
+                        north: 34.238418,
+                        south: 34.238118,
+                        east: -118.530018,
+                        west: -118.531381,
+                    },
+                });
+
+                const library = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillOpacity: 0,
+                    map,
+                    bounds: {
+                        north: 34.24041,
+                        south: 34.23949,
+                        east: -118.52861,
+                        west: -118.53008,
+                    },
+                });
+
+                const nordhoffhall = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1,
+                    strokeWeight: 3,
+                    fillOpacity: 0,
+                    map,
+                    bounds: {
+                        north: 34.2367,
+                        south: 34.236,
+                        east: -118.5301,
+                        west: -118.531,
+                    },
+                });
+
+                jacaranda.setMap(null);
+                chaparralhall.setMap(null);
+                sierrahall.setMap(null);
+                library.setMap(null);
+                nordhoffhall.setMap(null);
+
+                var rects = [0, jacaranda, chaparralhall, sierrahall, library, nordhoffhall];
+
+                google.maps.event.addListener(map, "dblclick", function (event) {
+                    checkClick(map, current_question, event.latLng, rects);
+                });
+            };
+
+            // checking lick on some field
+            var checkClick = function(map, question, coord, rects) {
+                if (0 < current_question < 6) {
+                    console.log("Coordinate: " + coord);
+
+                    let lat = coord.lat();
+                    let lng = coord.lng();
+
+                    let rect = rects[question];
+                    rect.setMap(map);
+
+                    if (rect.getBounds().contains(coord)) {
+                        rect.strokeColor = "#00FF00";
+                        rect.fillColor = "#00FF00";
+                        answers.push(1);
+                    } else {
+                        rect.strokeColor = "#FF0000";
+                        rect.fillColor = "#FF0000";
+                        answers.push(0);
+                    }
+
+                    if (current_question == 5) {
+                        get('#next-container').innerHTML = "";
+                        nextQuestion();
+                    } else {
+                        get('#next-container').innerHTML = "<button onclick='nextQuestion();'>Next</button>";
+                    }
+                }
+            };
+
+            // setting map size 3:1
+            var setMapHeight = function() {
+                let block = get('#map');
+                let width = block.offsetWidth;
+                block.style.height = (width / 3 * 2) + 'px';
+            };
+
+            // question switcher
+            var nextQuestion = function() {
+                current_question++;
+
+                let sections = getAll('.question');
+
+                let i = 0;
+                sections.forEach(rect => {
+                    if (i == current_question) {
+                        rect.style.display = 'flex';
+                    } else {
+                        rect.style.display = 'none';
+                    }
+                    i++;
+                });
+
+                get('#next-container').innerHTML = "";
+
+                if (current_question == 6) {
+                    let right = 0;
+                    let wrong = 0;
+
+                    for (let i = 0; i < answers.length; i ++) {
+                        if (answers[i] == 1) {
+                            right++;
+                        } else {
+                            wrong++;
+                        }
+                    }
+
+                    let results = get('.results');
+                    results.style.display = 'flex';
+                    results.innerHTML = `
+                    <h2>Results</h2>
+                    <h3>Total: <span>${answers.length}</span></h3>
+                    <h3>Right: <span>${right}</span></h3>
+                    <h3>Wrong: <span>${wrong}</span></h3>
+                    `
+                }
+            };
+
+            var answers = [];
+            var current_question = -1;
+
+            document.addEventListener("DOMContentLoaded", () => {
+                initMap();
+                setMapHeight();
+                nextQuestion();
+            });
+
+            window.onresize = function() {
+                setMapHeight();
+            };
+        </script>
+        <style>
+            html {
+                scroll-behavior: smooth;
+                overflow-anchor: none;
+                display: flex;
+                justify-content: center;
+            }
+
+            * {
+                box-sizing: border-box;
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                user-select: none;  
+            }
+
+            @font-face {
+                font-family: 'Font';
+            }
+
+            :root {
+                --right: rgb(14, 194, 86);
+                --wrong: rgb(226, 78, 78);
+                --color: #0096ff;
+            }
+
+            ::-webkit-scrollbar {
+                display: none;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                display: none;
+            }
+
+            body, button, html, input, select, textarea {
+                font-family: 'Font';
+                color: black;
+            }
+
+            h1, h2, h3, h4, h5, p {
+                margin: 0;
+            }
+            a  {text-decoration: none;}
+
+
+            body {
+                width: 1280px;
+                background: rgb(230, 230, 230);
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                gap: 100px;
+            }
+
+            main {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            header {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: white;
+            }
+
+            @media (max-width: 1280px) {
+                body {
+                    width: 100%;
+                }
+            }
+
+            section {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: white;
+            }
+
+            section p {
+                text-align: center;
+                font-size: 20px;
+            }
+
+            button {
+                width: fit-content;
+                font-size: 20px;
+                color: white;
+                background: var(--color);
+                border: 1px solid var(--color);
+                border-radius: 10px;
+                text-align: center;
+                padding: 10px 20px;
+                transition: all .3s;
+            } button:active {
+                background: white;
+                color: var(--color);
+            }
+
+            .map-container {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+            }
+
+
+            .map-container #map {
+                width: 100%;
+                border-radius: 10px;
+            }
+
+            .disabled {
+                display: none !important;
+            }
+
+            #next-container {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .results {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .results h3 {
+                text-align: center;
+            }
+        </style>
+    </body>
+</html>
